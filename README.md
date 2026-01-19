@@ -10,14 +10,6 @@ npm install
 npm run serve
 ```
 
-### Push orgin code
-```
-git status
-git add .
-git commit -m "update"
-git push origin main
-```
-
 ### Update GitHub Pages
 ##### 1 Compiles and minifies for production
 ```
@@ -29,6 +21,14 @@ npm run build
 npm run deploy
 ```
 
+
+### Push orgin code
+```
+git status
+git add .
+git commit -m "update"
+git push origin main
+```
 
 ### Pull update in Github
 ```

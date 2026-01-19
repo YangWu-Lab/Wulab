@@ -8,7 +8,8 @@ export const tutorials = [
     tags: ["GWAS", "Plot"],
     updated: "2025-12-29",
     icon: require("@/assets/tutorial/icon_statgen.png"),
-    type: "md"
+    type: "md",
+    md: "gwas-plot.md"
   },
   {
     id: 3,
@@ -19,12 +20,13 @@ export const tutorials = [
     tags: ["scRNA", "QC"],
     updated: "2026-01-10",
     icon: require("@/assets/tutorial/icon_singlecell.png"),
-    type: "md"
+    type: "md",
+    md: "scrna-standard.md"
   },
   {
     id: 5,
     slug: "slurm-minimal",
-    title: "Linux + Slurm：集群跑任务最小模板",
+    title: "Linux + Slurm：集群跑任务模板",
     desc: "最常用 sbatch 参数、资源评估、日志定位。",
     category: "Engineering & Computing",
     tags: ["HPC", "Linux"],

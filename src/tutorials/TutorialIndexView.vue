@@ -287,4 +287,35 @@ export default {
 @media (max-width: 768px) {
   .cat-sidebar { display: none; }
 }
+
+/* 标签外层容器 */
+.ttags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;           /* 关键：每个标签之间的间距 */
+  margin-top: 15px;   /* 与描述文字拉开距离 */
+  min-height: 28px;
+}
+
+/* 单个标签样式（底板效果） */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;  /* 标签内边距 */
+  background: #f1f4f9; /* 浅灰色底板 */
+  color: #5a6a7a;     /* 文字颜色 */
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;  /* 圆角 */
+  border: 1px solid #e3ebf5; /* 细边框线 */
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.tag:hover {
+  background: #e8eef6;
+  color: #2f5d8a;
+}
+
 </style>

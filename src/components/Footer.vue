@@ -116,10 +116,13 @@ export default {
     return {
       pausePartners: false,
       partners: [
-        { name: "Fudan University", src: require("@/assets/institution/fudan.png") },
         { name: "West China Hospital", src: require("@/assets/institution/huaxi.jpg") },
         { name: "huaxikouqiang", src: require("@/assets/institution/huaxikouqiang.jpg") },
-        { name: "farmgtex", src: require("@/assets/institution/farmgtex_logo.gif") }
+        { name: "UQ", src: require("@/assets/institution/UQ.jpg") },
+        { name: "Fudan University", src: require("@/assets/institution/fudan.png") },
+        { name: "farmgtex", src: require("@/assets/institution/farmgtex_logo.gif") },
+        { name: "huanan", src: require("@/assets/institution/huanannongda.png") },
+        { name: "aarhus", src: require("@/assets/institution/Aarhus.png") }
         // { name: "XXX", src: require("@/assets/institution/xxx.png"), link: "https://xxx.edu" },
       ]
     };
@@ -253,7 +256,7 @@ export default {
   width: max-content;
   align-items: center;
   will-change: transform;
-  animation: partnersMarquee 18s linear infinite;
+  animation: partnersMarquee 80s linear infinite;
 }
 
 .partners-track.paused{

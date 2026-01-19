@@ -18,15 +18,13 @@ git commit -m "update"
 git push origin main
 ```
 
-### Compiles and minifies for production
+### Update GitHub Pages
+##### 1 Compiles and minifies for production
 ```
 npm run build
 ```
 
-### push the branch
+##### 2 push the branch
 ```
 npm run deploy
 ```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).

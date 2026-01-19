@@ -845,11 +845,11 @@ export default {
         {
           name: "Jingya Gao",
           role: "Visiting Student",
-          tags: ["Population", "Health", "Genetics"],
-          email: "visitA@lab.org",
-          interest: "Population health analysis",
-          hobby: "",
-          photo: ""
+          tags: ["Immunogenetics", "Large-scale Genomics"],
+          email: "gaojingya@stu.scu.edu.cn",
+          interest: "Integrating real-world clinical cohorts with large-scale genetic data to elucidate the genetic mechanisms underlying immune-related dermatologic and systemic diseases, supporting clinical stratification and precision treatment.",
+          hobby: "Drawing, Guitar",
+          photo: require("@/assets/people/gaojingya.jpg")
         },
         { 
           name: "Hanbing Wang",

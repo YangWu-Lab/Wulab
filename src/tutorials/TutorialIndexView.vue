@@ -2,50 +2,67 @@
   <div class="tutorial-container">
     <!-- 左侧分类导航 -->
     <div class="cat-sidebar">
-      <div
-        class="cat-link"
-        :class="{ active: selectedCategory === '全部' }"
-        @click="selectedCategory = '全部'"
-      >
-        全部 <span class="count">{{ countAll }}</span>
+      <div class="nav-group">
+        <div class="nav-label">TUTORIALS</div>
+        <div
+          class="cat-link"
+          :class="{ active: selectedCategory === 'All' }"
+          @click="selectCategory('All')"
+        >
+          All <span class="count">{{ countAll }}</span>
+        </div>
+
+        <div
+          v-for="c in categories"
+          :key="c"
+          class="cat-link"
+          :class="{ active: selectedCategory === c }"
+          @click="selectCategory(c)"
+        >
+          {{ c }} <span class="count">{{ countByCategory(c) }}</span>
+        </div>
       </div>
 
-      <div
-        v-for="c in categories"
-        :key="c"
-        class="cat-link"
-        :class="{ active: selectedCategory === c }"
-        @click="selectedCategory = c"
-      >
-        {{ c }} <span class="count">{{ countByCategory(c) }}</span>
+      <!-- ✅ 独立的问答区入口 -->
+      <div class="nav-group qa-nav">
+        <div class="nav-label">COMMUNITY</div>
+        <div
+          class="cat-link qa-link"
+          :class="{ active: selectedCategory === 'QA_BOARD' }"
+          @click="selectCategory('QA_BOARD')"
+        >
+          Discussion Board
+          <span class="dot"></span>
+        </div>
       </div>
     </div>
 
     <!-- 右侧内容 -->
     <div class="tutorial-content">
-      <div class="toolbar">
-        <input
-          v-model.trim="keyword"
-          class="search"
-          placeholder="搜索：GWAS / scRNA / ATAC / QC ..."
-        />
-        <div class="meta">共 {{ filtered.length }} 条</div>
-      </div>
-
-      <div v-if="filtered.length === 0" class="empty">
-        没有匹配的教程
-      </div>
-
-      <template v-else>
-        <!-- ✅ 选中分类时显示问答区（不会影响教程卡片样式） -->
+      <!-- 情况 A：显示问答板块 -->
+      <div v-if="selectedCategory === 'QA_BOARD'" class="qa-view">
         <BoardQA
-          v-if="selectedCategory !== '全部' && boardKey"
           :repo="issueRepo"
-          :boardKey="boardKey"
-          :boardTitle="selectedCategory"
+          boardKey="community"
+          boardTitle="Community Discussion"
         />
+      </div>
 
-        <!-- 教程列表 -->
+      <!-- 情况 B：显示教程列表 -->
+      <div v-else class="list-view">
+        <div class="toolbar">
+          <input
+            v-model.trim="keyword"
+            class="search"
+            placeholder="Search: GWAS / scRNA / ATAC / QC ..."
+          />
+          <div class="meta">Total: {{ filtered.length }}</div>
+        </div>
+
+        <div v-if="filtered.length === 0" class="empty">
+          No matching tutorials found.
+        </div>
+
         <div class="grid">
           <div class="tcard" v-for="t in filtered" :key="t.id">
             <div class="tmeta">
@@ -65,17 +82,14 @@
             </div>
 
             <div class="tfooter">
-              <button class="read-more" type="button" @click="open(t)">
-                Read more →
-              </button>
-
-              <button class="open-btn" type="button" @click="open(t)">
+              <button class="read-more" @click="open(t)">Read more →</button>
+              <button class="open-btn" @click="open(t)">
                 {{ t.type === "md" ? "Open" : "Link" }}
               </button>
             </div>
           </div>
         </div>
-      </template>
+      </div>
     </div>
   </div>
 </template>
@@ -84,23 +98,15 @@
 import { tutorials } from "@/tutorials";
 import BoardQA from "@/components/BoardQA.vue";
 
-const CATEGORY_KEY = {
-  统计遗传分析: "statgen",
-  单细胞分析: "singlecell",
-  工程与计算: "engineering"
-};
-
 export default {
   name: "TutorialIndexView",
   components: { BoardQA },
   data() {
     return {
       keyword: "",
-      selectedCategory: "全部",
+      selectedCategory: "All",
       tutorials,
-
-      // ✅ 你的 GitHub 仓库（你现在用的是这个）
-      issueRepo: "Crazzy-Rabbit/Wulab"
+      issueRepo: "YangWu-Lab/Wulab"
     };
   },
   computed: {
@@ -110,10 +116,10 @@ export default {
     filtered() {
       const kw = this.keyword.toLowerCase();
       return this.tutorials
-        .filter((t) => (this.selectedCategory === "全部" ? true : t.category === this.selectedCategory))
+        .filter((t) => (this.selectedCategory === "All" ? true : t.category === this.selectedCategory))
         .filter((t) => {
           if (!kw) return true;
-          const hay = [t.title, t.desc, t.category, (t.tags || []).join(" "), t.level]
+          const hay = [t.title, t.desc, t.category, (t.tags || []).join(" ")]
             .join(" ")
             .toLowerCase();
           return hay.includes(kw);
@@ -121,31 +127,23 @@ export default {
         .sort((a, b) => (a.updated < b.updated ? 1 : -1));
     },
     countAll() {
-      if (!this.keyword) return this.tutorials.length;
-      return this.filtered.length;
-    },
-    boardKey() {
-      return CATEGORY_KEY[this.selectedCategory] || "";
+      return this.tutorials.length;
     }
   },
   methods: {
+    selectCategory(cat) {
+      this.selectedCategory = cat;
+      // 切换分类时可以滚动回顶部
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
     countByCategory(cat) {
-      const kw = this.keyword.toLowerCase();
-      return this.tutorials
-        .filter((t) => t.category === cat)
-        .filter((t) => {
-          if (!kw) return true;
-          const hay = [t.title, t.desc, t.category, (t.tags || []).join(" "), t.level]
-            .join(" ")
-            .toLowerCase();
-          return hay.includes(kw);
-        }).length;
+      return this.tutorials.filter((t) => t.category === cat).length;
     },
     open(t) {
       if (t.type === "md") {
         this.$router.push(`/tutorial/${t.slug}`);
-      } else if (t.type === "external" && t.link) {
-        window.open(t.link, "_blank", "noopener,noreferrer");
+      } else if (t.link) {
+        window.open(t.link, "_blank");
       }
     }
   }
@@ -153,50 +151,53 @@ export default {
 </script>
 
 <style scoped>
-/* ✅ 确保即使外层没定义变量，这里也有 */
 .tutorial-container {
   --accent: #2f5d8a;
-  --badgeBg: #f0f4fb;
-  --badgeText: #1a3e6e;
   --border: #e3ebf5;
   --shadow: 0 4px 14px rgba(15, 60, 120, 0.08);
-  --shadowHover: 0 16px 36px rgba(15, 60, 120, 0.16);
-}
-
-/* 整体布局：左分类 + 右内容 */
-.tutorial-container {
   display: flex;
   width: 100%;
-  gap: 20px;
+  gap: 30px;
 }
 
-/* 左侧分类导航 */
+/* 侧边栏样式优化 */
 .cat-sidebar {
-  width: 200px;
+  width: 240px;
   position: sticky;
-  top: 30%;
-  transform: translateY(-50%);
+  top: 120px;
   align-self: flex-start;
+}
+
+.nav-group {
+  margin-bottom: 30px;
+}
+
+.nav-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #abb5be;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  padding-left: 12px;
 }
 
 .cat-link {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
-  color: #9aa4af;
+  color: #7a8694;
   cursor: pointer;
-  margin-bottom: 12px;
-  transition: color 0.15s ease, background 0.15s ease;
-  border-radius: 10px;
-  padding: 8px 10px;
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
+  border-radius: 12px;
+  padding: 10px 14px;
 }
 
 .cat-link:hover {
   color: var(--accent);
-  background: rgba(47, 93, 138, 0.06);
+  background: rgba(47, 93, 138, 0.05);
 }
 
 .cat-link.active {
@@ -204,237 +205,86 @@ export default {
   background: rgba(47, 93, 138, 0.10);
 }
 
-.count {
-  font-size: 12px;
-  color: #666;
-  border: 1px solid var(--border);
-  background: #fff;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-weight: 800;
+.qa-link.active {
+  background: #2f5d8a;
+  color: #fff;
 }
 
-.tip {
-  margin-top: 12px;
-  font-size: 12px;
-  color: #888;
-  line-height: 1.5;
+.count {
+  font-size: 11px;
+  background: #f1f4f8;
+  color: #666;
+  padding: 2px 7px;
+  border-radius: 8px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  background: #ff4d4f;
+  border-radius: 50%;
 }
 
 /* 右侧内容 */
-.tutorial-content {
-  flex: 1;
-  min-width: 0;
-}
+.tutorial-content { flex: 1; min-width: 0; }
 
-/* 顶部工具栏 */
 .toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 24px;
 }
 
 .search {
-  flex: 1;
-  min-width: 260px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  outline: none;
+  flex: 1; padding: 12px 18px; border-radius: 14px;
+  border: 1px solid var(--border); outline: none; background: #fbfcfd;
 }
 
-.search:focus {
-  border-color: rgba(47, 93, 138, 0.35);
-  box-shadow: 0 6px 18px rgba(15, 60, 120, 0.10);
-}
+.meta { color: #999; font-size: 14px; font-weight: 700; }
 
-.meta {
-  color: #666;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-/* 卡片网格：三列 */
+/* 列表展示区 */
 .grid {
-  width: 100%;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 22px;
-  align-items: stretch;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
 }
 
-/* 单卡片 */
+/* 针对大屏幕可以开3列 */
+@media (min-width: 1200px) {
+  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 .tcard {
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  padding: 14px 16px 56px 16px;
-  position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: #fff; border-radius: 20px; border: 1px solid var(--border);
+  box-shadow: var(--shadow); padding: 16px 18px 60px 18px;
+  position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tcard:hover {
   transform: translateY(-6px);
-  box-shadow: var(--shadowHover);
+  box-shadow: 0 20px 40px rgba(15, 60, 120, 0.12);
 }
 
-/* 顶部：更新时间 + 分类标签 */
-.tmeta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.tdate {
-  font-size: 13px;
-  font-weight: 900;
-  color: var(--accent);
-}
-
+.tmeta { display: flex; justify-content: space-between; margin-bottom: 12px; }
+.tdate { font-size: 12px; color: #bbb; font-weight: 600; }
 .ttype {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(47, 93, 138, 0.08);
-  color: var(--accent);
-  font-size: 12px;
-  font-weight: 900;
-  white-space: nowrap;
+  padding: 3px 10px; border-radius: 8px;
+  background: #f0f4f8; color: var(--accent);
+  font-size: 11px; font-weight: 800;
 }
 
-/* icon 图片 */
 .timage {
-  width: 100%;
-  height: 160px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(15, 60, 120, 0.08);
-  background: #fff;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%; height: 140px; border-radius: 12px;
+  background: #fafbfc; margin-bottom: 15px;
+  display: flex; align-items: center; justify-content: center;
 }
+.timage img { width: 50px; opacity: 0.7; }
 
-.timage img {
-  width: 70%;
-  height: 70%;
-  object-fit: contain;
-  display: block;
-}
+.ttitle { font-size: 17px; font-weight: 800; color: #2c3e50; margin-bottom: 10px; line-height: 1.4; }
+.tdesc { font-size: 14px; color: #5a6a7a; line-height: 1.6; height: 68px; overflow: hidden; }
 
-/* 标题 */
-.ttitle {
-  font-size: 16px;
-  font-weight: 900;
-  color: var(--accent);
-  line-height: 1.35;
-  margin-bottom: 10px;
-  word-break: break-word;
-}
-
-/* 描述 */
-.tdesc {
-  font-size: 14px;
-  color: #444;
-  line-height: 1.75;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 5;
-  overflow: hidden;
-}
-
-/* tags */
-.ttags {
-  margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 26px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: #fff;
-  color: #555;
-  font-size: 12px;
-  font-weight: 900;
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 底部按钮区 */
-.tfooter {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-}
-
-.read-more,
-.open-btn {
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 900;
-  color: var(--accent);
-}
-
-.read-more:hover,
-.open-btn:hover {
-  text-decoration: underline;
-}
-
-/* empty */
-.empty {
-  padding: 26px;
-  background: #fff;
-  border-radius: 14px;
-  border: 1px dashed var(--border);
-  color: #777;
-}
-
-/* responsive */
-@media (max-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
+.tfooter { position: absolute; left: 18px; right: 18px; bottom: 18px; display: flex; justify-content: space-between; }
+.read-more, .open-btn { background: none; border: none; color: var(--accent); font-weight: 800; cursor: pointer; }
 
 @media (max-width: 768px) {
-  .cat-sidebar {
-    display: none;
-  }
-  .grid {
-    grid-template-columns: 1fr;
-  }
+  .cat-sidebar { display: none; }
 }
 </style>

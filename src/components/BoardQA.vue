@@ -3,101 +3,65 @@
     <div class="boardHead">
       <div class="boardTitle">{{ boardTitle }} · 问答区</div>
       <div class="boardSub">
-        每个问题对应一个 GitHub Issue（标题=问题标题，回复=评论）。
+        所有问题直接同步至 GitHub Issues。回复评论需在下方登录 GitHub。
       </div>
     </div>
 
-    <!-- 顶部说明 md -->
-    <div v-if="boardHtml" class="boardBody" v-html="boardHtml"></div>
-
-    <!-- 提问（不跳转，直接创建 Issue） -->
+    <!-- 提问区（站内直接创建） -->
     <div class="ask">
       <div class="askTitle">提一个新问题</div>
-
       <input v-model.trim="newTitle" class="ipt" placeholder="问题标题（必填）" />
-      <textarea
-        v-model.trim="newBody"
-        class="ta"
-        placeholder="补充描述（可选，建议写：背景/报错/期望）"
-      />
+      <textarea v-model.trim="newBody" class="ta" placeholder="补充描述（可选，建议写：背景/报错/期望）" />
 
       <div class="askActions">
-        <button class="btn" :disabled="!newTitle || posting" @click="createIssue">
-          {{ posting ? "发布中..." : "发布问题" }}
+        <button class="btn primary-btn" :disabled="!newTitle || posting" @click="createIssue">
+          {{ posting ? "正在发布..." : "确认发布问题" }}
         </button>
-        <div v-if="postError" class="err">{{ postError }}</div>
-
-        <button class="btn ghost" :disabled="loading || posting" @click="refresh">
-          刷新列表
-        </button>
-
-        <div class="askHint">
-          发布问题会在站内直接创建（无需跳转）。右侧回复评论仍需 GitHub 登录。
-        </div>
+        <button class="btn ghost" :disabled="loading || posting" @click="refresh">刷新列表</button>
+        <div class="askHint">发布后会自动出现在下方列表中。</div>
       </div>
-
-      <div v-if="postError" class="err">{{ postError }}</div>
+      <div v-if="postError" class="err-msg">发布失败：{{ postError }}</div>
     </div>
 
-    <div class="qa">
-      <!-- 左：问题列表 -->
-      <div class="left">
-        <div class="leftHead">
-          <div class="leftTitle">问题列表</div>
-          <div class="leftMeta">
-            <span v-if="loading">加载中...</span>
-            <span v-else>共 {{ issues.length }} 条</span>
-          </div>
+    <div class="qa-grid">
+      <!-- 左侧：问题列表 -->
+      <div class="qa-left">
+        <div class="list-head">
+          <span>问题列表</span>
+          <small v-if="loading">同步中...</small>
         </div>
-
-        <div v-if="error" class="err">{{ error }}</div>
-
-        <div v-if="!loading && issues.length === 0" class="empty">
-          暂无问题。你可以先发布一条问题。
-        </div>
-
-        <div v-else class="list">
+        <div v-if="error" class="err-msg">{{ error }}</div>
+        
+        <div class="issue-list">
+          <div v-if="issues.length === 0 && !loading" class="empty-hint">暂无讨论</div>
           <div
-            class="item"
             v-for="it in issues"
             :key="it.number"
+            class="issue-item"
             :class="{ active: selected && selected.number === it.number }"
             @click="select(it)"
           >
-            <div class="itTitle">#{{ it.number }} · {{ it.title }}</div>
-            <div class="itMeta">
-              <span>{{ it.user?.login }}</span>
-              <span>·</span>
-              <span>{{ fmtDate(it.created_at) }}</span>
-              <span>·</span>
-              <span>{{ it.comments }} replies</span>
-            </div>
+            <div class="it-title">#{{ it.number }} {{ it.title }}</div>
+            <div class="it-meta">{{ it.user.login }} · {{ it.comments }} 回复</div>
           </div>
         </div>
       </div>
 
-      <!-- 右：问题详情 + 回复区 -->
-      <div class="right">
-        <div v-if="!selected" class="placeholder">
-          选择左侧一个问题，在这里查看详情并回复。
-        </div>
-
+      <!-- 右侧：详情 -->
+      <div class="qa-right">
+        <div v-if="!selected" class="placeholder">请从左侧选择一个问题</div>
         <template v-else>
-          <div class="detailHead">
-            <div class="detailTitle">#{{ selected.number }} · {{ selected.title }}</div>
-            <div class="detailMeta">
-              {{ selected.user?.login }} · {{ fmtDate(selected.created_at) }} · {{ selected.comments }} replies
-            </div>
+          <div class="detail-header">
+            <h3 class="detail-title">#{{ selected.number }} {{ selected.title }}</h3>
+            <div class="detail-meta">由 {{ selected.user.login }} 发布于 {{ selected.created_at.slice(0, 10) }}</div>
           </div>
-
-          <div v-if="selectedBodyHtml" class="detailBody" v-html="selectedBodyHtml"></div>
-
-          <!-- 回复区（仍使用 utterances） -->
-          <IssueComments
-            :repo="repo"
-            :issueNumber="selected.number"
-            theme="github-light"
-          />
+          <div class="detail-body" v-html="renderedBody"></div>
+          
+          <!-- 评论区 (Utterances) -->
+          <div class="comments-wrap">
+            <div class="comment-label">参与讨论：</div>
+            <IssueComments :repo="repo" :issueNumber="selected.number" />
+          </div>
         </template>
       </div>
     </div>
@@ -108,308 +72,134 @@
 import MarkdownIt from "markdown-it";
 import IssueComments from "@/components/IssueComments.vue";
 
-// 你项目里 .md 已配 asset/source：require() 直接拿文本
-const mdCtx = require.context("@/assets/tutorial/md", false, /\.md$/);
-
 export default {
   name: "BoardQA",
   components: { IssueComments },
-  props: {
-    repo: { type: String, required: true },       // 例如 "Crazzy-Rabbit/Wulab"
-    boardKey: { type: String, required: true },   // statgen / singlecell / engineering
-    boardTitle: { type: String, required: true }  // 中文名
-  },
+  props: ["repo", "boardKey", "boardTitle"],
   data() {
     return {
       loading: false,
-      error: "",
+      posting: false,
       issues: [],
       selected: null,
-
-      boardHtml: "",
-      selectedBodyHtml: "",
-
+      error: "",
+      postError: "",
       newTitle: "",
       newBody: "",
-
-      posting: false,
-      postError: "",
-
-      md: new MarkdownIt({ html: true, linkify: true, typographer: true })
+      md: new MarkdownIt({ html: true, linkify: true })
     };
   },
   computed: {
-    labelName() {
-      return `board:${this.boardKey}`;
-    },
-    repoOwner() {
-      return this.repo.split("/")[0];
-    },
-    repoName() {
-      return this.repo.split("/")[1];
-    },
-    createApi() {
-      // ✅ 你可以在 .env.production 里配置成 vercel 线上地址
-      // 例如：https://xxx.vercel.app/api/create-issue
-      return process.env.VUE_APP_ISSUE_API || "/api/create-issue";
-    }
+    renderedBody() { return this.selected?.body ? this.md.render(this.selected.body) : "*无详细描述*"; },
+    labelName() { return `board:${this.boardKey}`; }
   },
   watch: {
-    boardKey: {
-      immediate: true,
-      handler() {
-        this.loadBoardMd();
-        this.fetchIssues();
-      }
-    }
+    boardKey: { immediate: true, handler() { this.fetchIssues(); } }
   },
   methods: {
-    fmtDate(s) {
-      if (!s) return "";
-      return String(s).slice(0, 10);
-    },
-
-    loadBoardMd() {
-      this.boardHtml = "";
-      const mdFile = `board_${this.boardKey}.md`;
-      const key = `./${mdFile}`;
-
-      if (!mdCtx.keys().includes(key)) {
-        this.boardHtml = this.md.render(`> 未找到栏目说明：${mdFile}（请在 src/assets/tutorial/md 下新建）`);
-        return;
-      }
-
-      const mod = mdCtx(key);
-      const text = mod?.default ?? mod;
-      this.boardHtml = this.md.render(text || "");
-    },
-
     async fetchIssues() {
       this.loading = true;
       this.error = "";
-      this.issues = [];
-      this.selected = null;
-      this.selectedBodyHtml = "";
-
       try {
-        // ✅ 不在 URL 里按 label 过滤，先拉全部 open issues
-        const api = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/issues?state=open&per_page=100&sort=updated&direction=desc`;
-
-        const res = await fetch(api, { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const arr = await res.json();
-
-        // 过滤 PR
-        const all = (arr || []).filter((x) => !x.pull_request);
-
-        // ✅ 在前端按 labelName 过滤（更稳定）
-        const issues = all.filter((it) => {
-          const labels = (it.labels || []).map((l) => (typeof l === "string" ? l : l.name));
-          return labels.includes(this.labelName);
-        });
-
-        this.issues = issues;
-        if (issues.length) this.select(issues[0]);
+        // 直接请求 GitHub API 获取列表（不需要 Token，无需通过 Vercel）
+        const url = `https://api.github.com/repos/${this.repo}/issues?labels=${encodeURIComponent(this.labelName)}&state=open&sort=created&direction=desc`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`无法获取数据 (HTTP ${res.status})`);
+        const data = await res.json();
+        this.issues = data.filter(i => !i.pull_request);
+        if (this.issues.length > 0 && !this.selected) this.select(this.issues[0]);
       } catch (e) {
-        this.error = `加载问题列表失败：${String(e?.message || e)}`;
+        this.error = "列表加载失败，请检查仓库是否为 Public";
       } finally {
         this.loading = false;
       }
     },
 
-    select(it) {
-      this.selected = it;
-      const body = it?.body || "";
-      this.selectedBodyHtml = body ? this.md.render(body) : "";
-    },
-
-    refresh() {
-      this.fetchIssues();
-    },
-
     async createIssue() {
-      if (!this.newTitle || this.posting) return;
-
       this.posting = true;
       this.postError = "";
-
       try {
         const payload = {
-          repo: this.repo,                  // "Crazzy-Rabbit/Wulab"
-          title: this.newTitle.trim(),
-          body: (this.newBody || "").trim(),
-          labels: [this.labelName]          // "board:statgen"
+          repo: this.repo,
+          title: this.newTitle,
+          body: this.newBody,
+          labels: [this.labelName]
         };
 
-        const headers = { "Content-Type": "application/json" };
-        const res = await fetch("/api/create-issue", {
+        // ✅ 指向你部署在 Vercel 上的完整 API 地址
+        const API_URL = "https://wulab.vercel.app/api/create-issue";
+
+        const res = await fetch(API_URL, {
           method: "POST",
-          headers,
+          mode: "cors", // 显式开启跨域模式
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
 
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || `发布失败 (HTTP ${res.status})`);
 
+        // 发布成功处理
         this.newTitle = "";
         this.newBody = "";
-
         await this.fetchIssues();
-        const created = this.issues.find((x) => x.number === data.number);
+        
+        // 自动选中新创建的问题
+        const created = this.issues.find(i => i.number === data.number);
         if (created) this.select(created);
+        
+        alert("发布成功！");
       } catch (e) {
-        this.postError = `发布失败：${String(e?.message || e)}`;
+        this.postError = e.message;
       } finally {
         this.posting = false;
       }
+    },
 
-    }
+    select(it) { this.selected = it; },
+    refresh() { this.fetchIssues(); }
   }
 };
 </script>
 
 <style scoped>
-.board {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
-  padding: 14px 16px;
-  margin-bottom: 16px;
-}
+.board { background: #fff; border: 1px solid #e3ebf5; border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.boardTitle { font-size: 20px; font-weight: 800; color: #2f5d8a; }
+.boardSub { font-size: 13px; color: #888; margin-bottom: 20px; }
 
-.boardHead { margin-bottom: 10px; }
-.boardTitle { font-size: 16px; font-weight: 900; color: var(--accent); }
-.boardSub { margin-top: 6px; font-size: 12px; color: #777; line-height: 1.6; }
-.boardBody { margin-top: 10px; line-height: 1.75; color: #333; }
+.ask { background: #f8fbff; padding: 16px; border-radius: 12px; border: 1px solid #e1eaf5; margin-bottom: 24px; }
+.askTitle { font-weight: 800; color: #2f5d8a; margin-bottom: 12px; }
+.ipt, .ta { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 10px; outline: none; box-sizing: border-box; }
+.ta { min-height: 80px; resize: vertical; }
+.askActions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.btn { padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 700; border: none; transition: background 0.2s; }
+.primary-btn { background: #2f5d8a; color: #fff; }
+.primary-btn:hover { background: #1e3f5f; }
+.primary-btn:disabled { background: #ccc; cursor: not-allowed; }
+.ghost { background: #fff; border: 1px solid #ddd; color: #666; }
+.askHint { font-size: 12px; color: #999; }
 
-.ask {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #eef2f7;
-}
+.qa-grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; border-top: 1px solid #eee; padding-top: 24px; }
+.list-head { display: flex; justify-content: space-between; font-weight: 800; margin-bottom: 12px; }
+.issue-list { max-height: 500px; overflow-y: auto; }
+.issue-item { padding: 12px; border: 1px solid #f0f0f0; border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
+.issue-item:hover { border-color: #2f5d8a; background: #fbfdff; }
+.issue-item.active { background: #f0f5fa; border-color: #2f5d8a; }
+.it-title { font-size: 14px; font-weight: 700; color: #333; line-height: 1.4; }
+.it-meta { font-size: 11px; color: #999; margin-top: 6px; }
 
-.askTitle { font-weight: 900; color: var(--accent); margin-bottom: 8px; }
+.detail-header { margin-bottom: 15px; }
+.detail-title { color: #2f5d8a; font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+.detail-meta { font-size: 12px; color: #999; }
+.detail-body { background: #fafafa; padding: 16px; border-radius: 12px; font-size: 14px; line-height: 1.6; border: 1px solid #f0f0f0; }
+.comments-wrap { margin-top: 24px; }
+.comment-label { font-weight: 800; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; margin-bottom: 15px; }
 
-.ipt {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  outline: none;
-  margin-bottom: 10px;
-}
+.err-msg { color: #ff4d4f; font-size: 12px; margin-top: 8px; }
+.empty-hint { color: #bbb; text-align: center; padding: 20px 0; font-size: 13px; }
+.placeholder { padding: 100px 0; text-align: center; color: #ccc; font-style: italic; }
 
-.ta {
-  width: 100%;
-  min-height: 90px;
-  resize: vertical;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  outline: none;
-  line-height: 1.6;
-}
-
-.askActions {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.btn {
-  border: 1px solid var(--border);
-  background: #fff;
-  color: var(--accent);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(15, 60, 120, 0.06);
-}
-
-.btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
-.btn.ghost { background: transparent; box-shadow: none; }
-
-.askHint { font-size: 12px; color: #777; }
-
-.qa {
-  margin-top: 14px;
-  display: grid;
-  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
-  gap: 14px;
-}
-
-/* ✅ 关键：允许子元素收缩，不然会溢出 */
-.left, .right {
-  min-width: 0;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 12px;
-  background: #fff;
-  overflow: hidden; /* ✅ 防止 iframe/长文本撑出 */
-}
-
-.leftHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-.leftTitle { font-weight: 900; color: var(--accent); }
-.leftMeta { font-size: 12px; color: #777; }
-
-.err { color: #c00; font-size: 12px; padding: 8px 0; }
-.empty { color: #777; font-size: 12px; padding: 10px 0; }
-
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 520px;
-  overflow: auto;
-  overflow-x: hidden; /* ✅ */
-}
-.item {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px;
-  cursor: pointer;
-  transition: box-shadow .15s ease, transform .15s ease;
-}
-.item:hover {
-  box-shadow: 0 10px 22px rgba(15,60,120,.10);
-  transform: translateY(-1px);
-}
-.item.active {
-  border-color: rgba(47,93,138,.45);
-  background: rgba(47,93,138,.06);
-}
-
-.itTitle { font-weight: 900; color: #1a3e6e; line-height: 1.35; }
-.itMeta { margin-top: 6px; font-size: 12px; color: #777; display: flex; gap: 6px; flex-wrap: wrap; }
-
-.placeholder { color: #777; font-size: 12px; padding: 10px 0; }
-
-.detailHead { margin-bottom: 10px; }
-.detailTitle { font-weight: 900; color: var(--accent); line-height: 1.35; }
-.detailMeta { margin-top: 6px; font-size: 12px; color: #777; }
-
-.detailBody {
-  margin-top: 10px;
-  padding: 10px;
-  border: 1px dashed #e6eef8;
-  border-radius: 12px;
-  background: #fbfdff;
-  line-height: 1.75;
-}
-
-@media (max-width: 1100px) {
-  .qa {
-    grid-template-columns: 1fr;
-  }
+@media (max-width: 800px) {
+  .qa-grid { grid-template-columns: 1fr; }
 }
 </style>

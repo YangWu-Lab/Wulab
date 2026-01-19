@@ -28,3 +28,9 @@ npm run build
 ```
 npm run deploy
 ```
+
+
+### Pull update in Github
+```
+git pull origin main
+```

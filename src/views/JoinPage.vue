@@ -1,7 +1,7 @@
 <template>
   <div class="join-page">
     
-    <!-- 中间内容区域：自适应居中，大小恢复正常，不再缩水 -->
+    <!-- 中间内容区域 -->
     <div class="inner-content">
       
       <!-- JOIN US 标题 -->
@@ -13,6 +13,7 @@
 
       <!-- 职位卡片 -->
       <div class="positions-grid">
+        <!-- Postdoctoral Fellow 卡片 -->
         <div class="position-card">
           <div class="icon-plate icon-plate-lg" aria-hidden="true">
             <svg class="icon-svg" viewBox="0 0 24 24" fill="none">
@@ -23,15 +24,18 @@
               <path class="s" d="M8.1 12.9c1.8.7 3.7 1.1 5.9 1.1 2.1 0 4-.4 5.8-1.1" />
             </svg>
           </div>
-          <h2>Postdoctoral Fellow</h2>
-          <p class="pos-desc" :class="{ open: openPos === 'postdoc' }">
+          
+          <!-- ✅ 修改点：加上链接，去掉 More 按钮 -->
+          <h2>
+            <a href="https://yjs.cd120.com/contents/412/7080.html" class="pos-link">Postdoctoral Fellow</a>
+          </h2>
+          <!-- ✅ 修改点：描述直接显示 -->
+          <p class="pos-desc">
             We welcome postdocs with expertise in genomics, bioinformatics, or statistical genetics.
           </p>
-          <button class="pos-more" type="button" @click="togglePos('postdoc')">
-            {{ openPos === 'postdoc' ? "Less" : "More" }}
-          </button>
         </div>
 
+        <!-- PhD / Master Students 卡片 -->
         <div class="position-card">
           <div class="icon-plate icon-plate-lg" aria-hidden="true">
             <svg class="icon-svg" viewBox="0 0 24 24" fill="none">
@@ -43,13 +47,17 @@
               <path class="b" d="M16.0 12.0h1.8" />
             </svg>
           </div>
-          <h2>PhD / Master Students</h2>
-          <p class="pos-desc" :class="{ open: openPos === 'phd' }">
+          
+          <!-- ✅ 修改点：分别给 PhD 和 Master 加上链接 -->
+          <h2>
+            <a href="https://yjs.cd120.com/contents/412/7080.html" class="pos-link">PhD</a> / 
+            <a href="https://yjs.cd120.com/contents/412/6627.html" class="pos-link">Master</a> 
+            Students
+          </h2>
+          <!-- ✅ 修改点：描述直接显示 -->
+          <p class="pos-desc">
             Looking for highly motivated students to pursue graduate research projects in human genomics.
           </p>
-          <button class="pos-more" type="button" @click="togglePos('phd')">
-            {{ openPos === 'phd' ? "Less" : "More" }}
-          </button>
         </div>
       </div>
 
@@ -87,7 +95,7 @@
       
     </div> <!-- END of inner-content -->
 
-    <!-- 合作伙伴部分：绝对定位锁死在屏幕最底部，绝无任何修改颜色的滤镜 -->
+    <!-- 合作伙伴部分：绝对定位锁死在屏幕最底部 -->
     <div class="partners-section-wrapper" v-if="partnerLogos && partnerLogos.length">
       <div class="partners-title">Collaborating Institutions</div>
       
@@ -105,7 +113,6 @@
               :href="p.link || '#'"
               target="_blank"
             >
-              <!-- 取消了所有滤镜，恢复原始彩色 -->
               <img class="partner-logo" :src="p.src" :alt="p.name" />
             </a>
           </div>
@@ -132,16 +139,21 @@ export default {
   name: "JoinPage",
   data() {
     return {
-      openPos: null,
+      // openPos 已删除，不再需要
       pausePartners: false,
       partnerLogos: [
-        { name: "WCH", src: require("@/assets/institution/huaxi.jpg") },
+        { name: "West China Hospital", src: require("@/assets/institution/huaxi.jpg") },
+        { name: "huaxieryuan", src: require("@/assets/institution/huaxieryuan.png") },
         { name: "huaxikouqiang", src: require("@/assets/institution/huaxikouqiang.jpg") },
         { name: "UQ", src: require("@/assets/institution/UQ.jpg") },
+        { name: "dongshi", src: require("@/assets/institution/dongshi.jpg") },
         { name: "Fudan University", src: require("@/assets/institution/fudan.png") },
-        { name: "farmgtex", src: require("@/assets/institution/farmgtex_logo.gif") },
         { name: "huanan", src: require("@/assets/institution/huanannongda.png") },
-        { name: "aarhus", src: require("@/assets/institution/Aarhus.png") }
+        { name: "aarhus", src: require("@/assets/institution/Aarhus.png") },
+        { name: "shanghai", src: require("@/assets/institution/shanghai.jpg") },
+        { name: "changping", src: require("@/assets/institution/changping.png") },
+        { name: "darenqun", src: require("@/assets/institution/darenqun.jpg") },
+        { name: "farmgtex", src: require("@/assets/institution/farmgtex_logo.gif") },
       ]
     };
   },
@@ -155,22 +167,18 @@ export default {
       for (let r = 0; r < reps; r++) out = out.concat(base);
       return out;
     }
-  },
-  methods: {
-    togglePos(key) {
-      this.openPos = this.openPos === key ? null : key;
-    }
   }
+  // methods 已删除，不再需要 toggle
 };
 </script>
 
 <style scoped>
-/* 1. 全局布局：强制一屏，无滚动条 */
+/* 1. 全局布局 */
 .join-page {
-  position: relative; /* 为底部绝对定位做准备 */
+  position: relative;
   width: 100%;
-  height: 100vh; /* 死死锁定一屏高度 */
-  overflow: hidden; /* 绝对禁止出现滚动条 */
+  height: 100vh;
+  overflow: hidden;
   
   background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), 
                     url('@/assets/hero/beijing.png'); 
@@ -186,22 +194,21 @@ export default {
   --accent: #2f5d8a;
 }
 
-/* 2. 中间内容区：不再缩水，垂直居中均匀分布 */
+/* 2. 中间内容区 */
 .inner-content {
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 80px 20px 0 20px; /* 顶部留出导航栏空间 */
+  padding: 80px 20px 0 20px;
   
-  /* 这里的 Flex 设置保证元素自然撑开，不再产生断崖式空白 */
-  height: calc(100vh - 160px); /* 减去底部轮播图的高度 */
+  height: calc(100vh - 160px); 
   display: flex;
   flex-direction: column;
-  justify-content: center; /* 整体居中 */
+  justify-content: center;
   align-items: center;
 }
 
-/* 标题样式：恢复正常大小 */
+/* 标题样式 */
 .title-wrapper { text-align: center; }
 .title-wrapper--contact { margin-top: 4vh; }
 
@@ -214,12 +221,12 @@ export default {
 }
 .title-card h1 { font-size: 28px; color: #1a3e6e; margin: 0; }
 
-/* 职位卡片布局：恢复正常间距 */
+/* 职位卡片布局 */
 .positions-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(260px, 1fr));
   gap: 40px;
-  margin-top: 4vh; /* 使用 vh 根据屏幕高度自适应间距 */
+  margin-top: 4vh;
   justify-items: center;
   width: 100%;
 }
@@ -231,7 +238,7 @@ export default {
   text-align: center;
 }
 
-/* 图标恢复正常醒目大小 */
+/* 图标 */
 .icon-plate {
   background: #fff;
   box-shadow: 0 4px 14px rgba(15, 60, 120, 0.08);
@@ -248,12 +255,32 @@ export default {
 .s { stroke: var(--ink); stroke-width: 2.4; }
 .b { stroke: var(--blue); stroke-width: 3.2; }
 
-.position-card h2 { font-size: 20px; color: #2f5d8a; margin: 0; }
-.pos-desc { margin-top: 8px; font-size: 14px; color: #444; line-height: 1.5; display: none; }
-.pos-desc.open { display: block; }
-.pos-more { margin-top: 8px; background: none; border: none; cursor: pointer; font-weight: 900; color: var(--accent); text-decoration: underline; }
+/* 链接样式 */
+.position-card h2 { 
+  font-size: 20px; 
+  color: #2f5d8a; 
+  margin: 0; 
+}
+/* 新增：文字链接样式 */
+.pos-link {
+  color: inherit; /* 继承h2颜色 */
+  text-decoration: underline; /* 加上下划线 */
+  cursor: pointer;
+}
+.pos-link:hover {
+  color: var(--accent); /* 悬停变色，可选 */
+}
 
-/* 联系方式卡片恢复正常排版 */
+/* 描述文字：默认显示 */
+.pos-desc { 
+  margin-top: 8px; 
+  font-size: 14px; 
+  color: #444; 
+  line-height: 1.5; 
+  display: block; /* 永远显示 */
+}
+
+/* 联系方式卡片 */
 .contact-card {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 16px;
@@ -273,14 +300,14 @@ export default {
   color: #444; 
   line-height: 1.6; 
   word-break: break-word; 
-  font-size: 18px;
+  font-size: 18px; /* 保持您要求的大小 */
 }
 .contact-link { font-weight: 600; color: #444; text-decoration: underline; }
 .contact-link:hover { color: var(--accent); }
 
-/* 3. 底部合作伙伴：绝对定位，死死钉在屏幕最下方 */
+/* 3. 底部合作伙伴 */
 .partners-section-wrapper { 
-  position: absolute; /* 绝对定位，绝不会和上方内容产生巨大间隔 */
+  position: absolute;
   bottom: 0;
   left: 0;
   width: 100%; 
@@ -298,7 +325,7 @@ export default {
 .partners-marquee {
   width: 100%;
   overflow: hidden;
-  background-color: #fff; /* 白色底 */
+  background-color: #fff;
   padding: 10px 0; 
   box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
 }
@@ -323,9 +350,8 @@ export default {
   text-decoration: none;
 }
 
-/* 【重要修正】：完全去除滤镜（filter），100% 恢复彩色原图 */
 .partner-logo { 
-  max-height: 55px; /* 合理高度，不截断 */
+  max-height: 55px; 
   display: block; 
   object-fit: contain; 
   padding: 5px;

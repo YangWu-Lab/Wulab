@@ -2,6 +2,7 @@
   <footer class="footer-root">
     <div class="footer-inner">
       <div class="footer-grid">
+        <!-- 1. Contact -->
         <div class="footer-col">
           <div class="footer-title">Contact</div>
           <div class="footer-divider"></div>
@@ -15,19 +16,34 @@
           <div class="footer-text">ZIP: 610213</div>
         </div>
 
+        <!-- 2. Admissions Information (修改处) -->
         <div class="footer-col">
           <div class="footer-title">Admissions Information</div>
           <div class="footer-divider"></div>
           <ul class="footer-links">
+            <!-- ✅ 新增：博士后招聘 (放在最上方) -->
             <li>
               <a
                 href="https://yjs.cd120.com/contents/412/7080.html"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                PhD Admissions
+                Postdoctoral Fellow
               </a>
             </li>
+
+            <!-- 原有的 PhD -->
+            <li>
+              <a
+                href="https://yjs.cd120.com/contents/412/7080.html"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                PhD Admission
+              </a>
+            </li>
+            
+            <!-- 原有的 Recommended -->
             <li>
               <a
                 href="https://yjs.cd120.com/contents/412/6627.html"
@@ -40,6 +56,7 @@
           </ul>
         </div>
 
+        <!-- 3. Links -->
         <div class="footer-col">
           <div class="footer-title">Links</div>
           <div class="footer-divider"></div>
@@ -60,7 +77,7 @@
       <div class="footer-bottom">
         <div class="footer-line"></div>
 
-        <!-- ✅ 合作单位：无缝循环（两组相同内容） -->
+        <!-- 合作单位循环 -->
         <div
           class="footer-partners"
           v-if="partners && partners.length"
@@ -117,13 +134,17 @@ export default {
       pausePartners: false,
       partners: [
         { name: "West China Hospital", src: require("@/assets/institution/huaxi.jpg") },
+        { name: "huaxieryuan", src: require("@/assets/institution/huaxieryuan.png") },
         { name: "huaxikouqiang", src: require("@/assets/institution/huaxikouqiang.jpg") },
         { name: "UQ", src: require("@/assets/institution/UQ.jpg") },
+        { name: "dongshi", src: require("@/assets/institution/dongshi.jpg") },
         { name: "Fudan University", src: require("@/assets/institution/fudan.png") },
-        { name: "farmgtex", src: require("@/assets/institution/farmgtex_logo.gif") },
         { name: "huanan", src: require("@/assets/institution/huanannongda.png") },
-        { name: "aarhus", src: require("@/assets/institution/Aarhus.png") }
-        // { name: "XXX", src: require("@/assets/institution/xxx.png"), link: "https://xxx.edu" },
+        { name: "aarhus", src: require("@/assets/institution/Aarhus.png") },
+        { name: "shanghai", src: require("@/assets/institution/shanghai.jpg") },
+        { name: "changping", src: require("@/assets/institution/changping.png") },
+        { name: "darenqun", src: require("@/assets/institution/darenqun.jpg") },
+        { name: "farmgtex", src: require("@/assets/institution/farmgtex_logo.gif") },
       ]
     };
   }
@@ -146,7 +167,7 @@ export default {
   --border: #e3ebf5;
 }
 
-/* ✅ 只有 3 列：Contact / Admissions / Links */
+/* 3 列布局 */
 .footer-grid{
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -175,7 +196,6 @@ export default {
   background: linear-gradient(90deg, rgba(47,93,138,0.55), rgba(47,93,138,0.15));
 }
 
-/* ✅ 统一内容字体：Contact 文本 + Links 文本 */
 .footer-text,
 .footer-links a{
   color: #444;
@@ -184,7 +204,6 @@ export default {
   font-weight: 600;
 }
 
-/* Links list */
 .footer-links{
   list-style: none;
   padding: 0;
@@ -194,7 +213,7 @@ export default {
   gap: 8px;
 }
 
-/* ✅ 链接默认下划线 */
+/* 链接样式 */
 .footer-links a{
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -209,7 +228,6 @@ export default {
   text-decoration-color: rgba(47,93,138,0.9);
 }
 
-/* ✅ Contact 邮箱内联链接：同样默认下划线 */
 .footer-inline-link{
   color: inherit;
   font-weight: inherit;
@@ -235,9 +253,7 @@ export default {
   margin-bottom: 12px;
 }
 
-/* =========================
-   ✅ Footer 合作单位滚动条（无缝）
-   ========================= */
+/* 合作单位滚动条 */
 .footer-partners{
   width: 100%;
   margin: 4px 0 10px 0;

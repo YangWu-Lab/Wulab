@@ -70,8 +70,13 @@
                   </div>
                 </div>
 
-                <!-- 右侧二寸照 -->
-                <div class="pi-photo" aria-hidden="true">
+                <!-- 右侧二寸照 (添加了点击放大功能) -->
+                <div 
+                  class="pi-photo zoomable" 
+                  :class="{ disabled: !pi.photo }"
+                  @click="pi.photo && openImage(pi.photo, pi.name)"
+                  aria-hidden="true"
+                >
                   <img
                     v-if="pi.photo"
                     :src="pi.photo"
@@ -84,6 +89,9 @@
                     <path class="s" d="M4.5 20.2c1.7-4 13.3-4 15 0" />
                     <path class="b" d="M9.3 9.2h5.4" />
                   </svg>
+                  
+                  <!-- 放大提示图标 -->
+                  <span v-if="pi.photo" class="zoom-hint" aria-hidden="true">+</span>
                 </div>
               </div>
             </div>
@@ -1116,7 +1124,18 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* ✅ 让其支持点击样式 */
+  position: relative;
 }
+
+/* ✅ 点击放大：支持鼠标手势 */
+.pi-photo.zoomable {
+  cursor: pointer;
+}
+.pi-photo.zoomable.disabled {
+  cursor: default;
+}
+
 .pi-photo-img {
   width: 100%;
   height: 100%;

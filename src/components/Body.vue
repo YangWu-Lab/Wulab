@@ -472,7 +472,7 @@ export default {
   padding: 10px 20px;
   box-sizing:border-box;
   margin:0;
-  margin-top:-20px;
+  margin-top:-5px;
 }
 .hero-inner{
   width:100%;
@@ -483,7 +483,7 @@ export default {
 
 .hero-slider{
   position:relative;
-  height: clamp(320px, 38vw, 520px);
+  height: clamp(320px, 38vw, 750px);
   border-radius: 18px;
   overflow:hidden;
 }
@@ -493,7 +493,7 @@ export default {
   inset:0;
   width:100%;
   height:100%;
-  object-fit:cover;
+  object-fit: fill; /* 关键修改：改成 contain */
   object-position:center;
   display:block;
   opacity:0;

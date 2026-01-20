@@ -1,5 +1,7 @@
 <template>
   <div class="join-page">
+    
+    <!-- 中间内容区域：自适应居中，大小恢复正常，不再缩水 -->
     <div class="inner-content">
       
       <!-- JOIN US 标题 -->
@@ -59,8 +61,8 @@
       </div>
 
       <!-- 联系方式卡片 -->
-      <div class="contact-card contact-card--up">
-        <div class="contact-item contact-item--center">
+      <div class="contact-card">
+        <div class="contact-item">
           <span class="icon-plate icon-plate-sm" aria-hidden="true">
             <svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none">
               <path class="s" d="M4.2 7h15.6v10.8H4.2V7Z" />
@@ -82,45 +84,46 @@
           <span>D5A, Chengdu Frontiers Medical Center, 2222 Xinchuan Road, Chengdu, Sichuan Province, China</span>
         </div>
       </div>
+      
+    </div> <!-- END of inner-content -->
 
-      <div class="join-sep"></div>
-
-      <!-- 合作伙伴部分 -->
-      <div class="partners-section-wrapper" v-if="partnerLogos && partnerLogos.length">
-        <div class="partners-title">Collaborating Institutions</div>
-        
-        <div
-          class="partners-marquee"
-          @mouseenter="pausePartners = true"
-          @mouseleave="pausePartners = false"
-        >
-          <div class="partners-track" :class="{ paused: pausePartners }">
-            <div class="partners-group">
-              <a
-                v-for="(p, i) in loopPartners"
-                :key="'a-' + i"
-                class="partner-item"
-                :href="p.link || '#'"
-                target="_blank"
-              >
-                <img class="partner-logo" :src="p.src" :alt="p.name" />
-              </a>
-            </div>
-            <div class="partners-group" aria-hidden="true">
-              <a
-                v-for="(p, i) in loopPartners"
-                :key="'b-' + i"
-                class="partner-item"
-                :href="p.link || '#'"
-                target="_blank"
-              >
-                <img class="partner-logo" :src="p.src" :alt="p.name" />
-              </a>
-            </div>
+    <!-- 合作伙伴部分：绝对定位锁死在屏幕最底部，绝无任何修改颜色的滤镜 -->
+    <div class="partners-section-wrapper" v-if="partnerLogos && partnerLogos.length">
+      <div class="partners-title">Collaborating Institutions</div>
+      
+      <div
+        class="partners-marquee"
+        @mouseenter="pausePartners = true"
+        @mouseleave="pausePartners = false"
+      >
+        <div class="partners-track" :class="{ paused: pausePartners }">
+          <div class="partners-group">
+            <a
+              v-for="(p, i) in loopPartners"
+              :key="'a-' + i"
+              class="partner-item"
+              :href="p.link || '#'"
+              target="_blank"
+            >
+              <!-- 取消了所有滤镜，恢复原始彩色 -->
+              <img class="partner-logo" :src="p.src" :alt="p.name" />
+            </a>
+          </div>
+          <div class="partners-group" aria-hidden="true">
+            <a
+              v-for="(p, i) in loopPartners"
+              :key="'b-' + i"
+              class="partner-item"
+              :href="p.link || '#'"
+              target="_blank"
+            >
+              <img class="partner-logo" :src="p.src" :alt="p.name" />
+            </a>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -162,19 +165,20 @@ export default {
 </script>
 
 <style scoped>
-/* 1. 全局背景配置 */
+/* 1. 全局布局：强制一屏，无滚动条 */
 .join-page {
+  position: relative; /* 为底部绝对定位做准备 */
   width: 100%;
-  min-height: 100vh;
+  height: 100vh; /* 死死锁定一屏高度 */
+  overflow: hidden; /* 绝对禁止出现滚动条 */
+  
   background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), 
                     url('@/assets/hero/beijing.png'); 
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
   
-  /* ✅ 确保最外层底部完全没缝隙 */
-  padding: 120px 0 0 0; 
-  margin: 0;
+  display: flex;
+  flex-direction: column;
   
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --ink: #7b7b7b;
@@ -182,31 +186,42 @@ export default {
   --accent: #2f5d8a;
 }
 
+/* 2. 中间内容区：不再缩水，垂直居中均匀分布 */
 .inner-content {
+  width: 100%;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 20px 0 20px; /* ✅ 底部 Padding 设为 0 */
+  padding: 80px 20px 0 20px; /* 顶部留出导航栏空间 */
+  
+  /* 这里的 Flex 设置保证元素自然撑开，不再产生断崖式空白 */
+  height: calc(100vh - 160px); /* 减去底部轮播图的高度 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* 整体居中 */
+  align-items: center;
 }
 
-/* 标题样式 */
-.title-wrapper { text-align: center; margin-bottom: 16px; }
+/* 标题样式：恢复正常大小 */
+.title-wrapper { text-align: center; }
+.title-wrapper--contact { margin-top: 4vh; }
+
 .title-card {
   display: inline-block;
   background: rgba(240, 244, 251, 0.9);
-  padding: 12px 24px;
+  padding: 10px 24px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(15, 60, 120, 0.08);
 }
-.title-card h1 { font-size: 32px; color: #1a3e6e; margin: 0; }
+.title-card h1 { font-size: 28px; color: #1a3e6e; margin: 0; }
 
-/* 职位卡片布局 */
+/* 职位卡片布局：恢复正常间距 */
 .positions-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(260px, 1fr));
-  gap: 28px;
-  margin-top: 80px;
-  margin-bottom: 28px;
+  gap: 40px;
+  margin-top: 4vh; /* 使用 vh 根据屏幕高度自适应间距 */
   justify-items: center;
+  width: 100%;
 }
 .position-card {
   width: min(360px, 100%);
@@ -216,6 +231,7 @@ export default {
   text-align: center;
 }
 
+/* 图标恢复正常醒目大小 */
 .icon-plate {
   background: #fff;
   box-shadow: 0 4px 14px rgba(15, 60, 120, 0.08);
@@ -224,95 +240,94 @@ export default {
   align-items: center;
   justify-content: center;
 }
-.icon-plate-lg { width: 92px; height: 92px; margin-bottom: 14px; }
-.icon-plate-sm { width: 58px; height: 58px; flex: 0 0 auto; }
+.icon-plate-lg { width: 80px; height: 80px; margin-bottom: 12px; }
+.icon-plate-sm { width: 50px; height: 50px; flex: 0 0 auto; }
 
-.icon-svg { width: 66px; height: 66px; fill: none; }
-.icon-svg-sm { width: 35px; height: 35px; fill: none; }
+.icon-svg { width: 55px; height: 55px; fill: none; }
+.icon-svg-sm { width: 30px; height: 30px; fill: none; }
 .s { stroke: var(--ink); stroke-width: 2.4; }
 .b { stroke: var(--blue); stroke-width: 3.2; }
 
-.position-card h2 { font-size: 19px; color: #2f5d8a; margin: 0; }
-.pos-desc { margin-top: 10px; font-size: 14px; color: #444; line-height: 1.6; display: none; }
+.position-card h2 { font-size: 20px; color: #2f5d8a; margin: 0; }
+.pos-desc { margin-top: 8px; font-size: 14px; color: #444; line-height: 1.5; display: none; }
 .pos-desc.open { display: block; }
-.pos-more { margin-top: 10px; background: none; border: none; cursor: pointer; font-weight: 900; color: var(--accent); text-decoration: underline; }
+.pos-more { margin-top: 8px; background: none; border: none; cursor: pointer; font-weight: 900; color: var(--accent); text-decoration: underline; }
 
-/* 联系方式部分 */
-.title-wrapper--contact { margin-top: 60px; margin-bottom: 40px; }
+/* 联系方式卡片恢复正常排版 */
 .contact-card {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 16px;
   box-shadow: 0 4px 14px rgba(15, 60, 120, 0.08);
-  padding: 26px;
+  padding: 24px;
   max-width: 520px;
-  margin: 0 auto;
+  width: 100%;
+  margin-top: 3vh;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
-.contact-item { display: flex; align-items: flex-start; gap: 16px; color: #444; line-height: 1.7; word-break: break-word; }
+.contact-item { 
+  display: flex; 
+  align-items: center; 
+  gap: 16px; 
+  color: #444; 
+  line-height: 1.6; 
+  word-break: break-word; 
+  font-size: 18px;
+}
 .contact-link { font-weight: 600; color: #444; text-decoration: underline; }
 .contact-link:hover { color: var(--accent); }
 
-/* 分割线 */
-.join-sep {
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(15, 60, 120, 0.15), transparent);
-  margin: 60px 0;
+/* 3. 底部合作伙伴：绝对定位，死死钉在屏幕最下方 */
+.partners-section-wrapper { 
+  position: absolute; /* 绝对定位，绝不会和上方内容产生巨大间隔 */
+  bottom: 0;
+  left: 0;
+  width: 100%; 
 }
 
-/* 合作伙伴滚动部分 */
-.partners-section-wrapper { width: 100%; margin-top: 20px; margin-bottom: 0; }
-.partners-title { text-align: center; font-size: 22px; font-weight: 700; color: var(--accent); margin-bottom: 24px; }
+.partners-title { 
+  text-align: center; 
+  font-size: 20px; 
+  font-weight: 700; 
+  color: var(--accent); 
+  margin-bottom: 10px; 
+}
 
+/* 轮播区域 */
 .partners-marquee {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
+  width: 100%;
   overflow: hidden;
-  /* ✅ 设置底部 padding 为 0，line-height 为 0 消除隐形空隙 */
-  padding: 10px 0 0 0; 
-  margin-bottom: 0;
-  line-height: 0; 
-  background: transparent;
+  background-color: #fff; /* 白色底 */
+  padding: 10px 0; 
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
 }
 
 .partners-track { 
   display: flex; 
   width: max-content; 
-  animation: partnersMarquee 100s linear infinite;
-  line-height: 0; /* ✅ 消除行高间隙 */
+  animation: partnersMarquee 60s linear infinite;
 }
 .partners-track.paused { animation-play-state: paused; }
 .partners-group { 
   display: flex; 
   gap: 40px; 
   padding-right: 40px; 
-  align-items: flex-end; /* ✅ 贴着底边对齐 */
+  align-items: center; 
 }
 @keyframes partnersMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
 .partner-item {
   display: flex;
-  align-items: flex-end;
-  margin-bottom: 0;
+  align-items: center;
+  text-decoration: none;
 }
 
+/* 【重要修正】：完全去除滤镜（filter），100% 恢复彩色原图 */
 .partner-logo { 
-  max-height: 70px; 
-  display: block; /* ✅ 消除 inline 元素的间隙 */
+  max-height: 55px; /* 合理高度，不截断 */
+  display: block; 
   object-fit: contain; 
-  filter: grayscale(10%); 
-  transition: filter 0.3s; 
-  background: rgba(255,255,255,0.7); 
-  border-radius: 4px;
   padding: 5px;
-  vertical-align: bottom; /* ✅ 强制底部对齐 */
-}
-.partner-logo:hover { filter: grayscale(0); background: rgba(255,255,255,1); }
-
-@media (max-width: 768px) {
-  .join-page { padding-top: 80px; }
-  .positions-grid { grid-template-columns: 1fr; margin-top: 40px; }
 }
 </style>

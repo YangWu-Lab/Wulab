@@ -27,7 +27,7 @@
           
           <!-- ✅ 修改点：加上链接，去掉 More 按钮 -->
           <h2>
-            <a href="https://yjs.cd120.com/contents/412/7080.html" class="pos-link">Postdoctoral Fellow</a>
+            <a href="http://www.wchscu.cn/public/notice/recruit/77467.html" class="pos-link">Postdoctoral Fellow</a>
           </h2>
           <!-- ✅ 修改点：描述直接显示 -->
           <p class="pos-desc">

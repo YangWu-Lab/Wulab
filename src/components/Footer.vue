@@ -24,7 +24,7 @@
             <!-- ✅ 新增：博士后招聘 (放在最上方) -->
             <li>
               <a
-                href="https://yjs.cd120.com/contents/412/7080.html"
+                href="http://www.wchscu.cn/public/notice/recruit/77467.html"
                 target="_blank"
                 rel="noopener noreferrer"
               >

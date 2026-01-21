@@ -333,7 +333,7 @@ export default {
 .partners-track { 
   display: flex; 
   width: max-content; 
-  animation: partnersMarquee 60s linear infinite;
+  animation: partnersMarquee 120s linear infinite;
 }
 .partners-track.paused { animation-play-state: paused; }
 .partners-group { 

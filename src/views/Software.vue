@@ -103,7 +103,7 @@ export default {
           id: 2,
           name: "OPERA",
           icon: require("@/assets/software/OPERA.png"),
-          link: "https://github.com/wuyangf7/OPERA",
+          link: `${process.env.BASE_URL}software/OPERA/`,
           description:
             "(Omics PlEiotRopic Association) is a software tool for testing the combinatorial pleiotropic associations between multiple molecular phenotypes and a complex trait of interest, using summary-level data from GWAS and molecular QTL studies. It can be used to prioritize molecular phenotypes that mediate the genetic effects for a complex trait and provide further mechanistic interpretation of the GWAS signals.",
           expanded: false

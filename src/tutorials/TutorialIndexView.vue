@@ -276,7 +276,7 @@ export default {
   background: #fafbfc; margin-bottom: 15px;
   display: flex; align-items: center; justify-content: center;
 }
-.timage img { width: 50px; opacity: 0.7; }
+.timage img { width: 150px; height: 150px; opacity: 0.7; }
 
 .ttitle { font-size: 17px; font-weight: 800; color: #2c3e50; margin-bottom: 10px; line-height: 1.4; }
 .tdesc { font-size: 14px; color: #5a6a7a; line-height: 1.6; height: 68px; overflow: hidden; }
